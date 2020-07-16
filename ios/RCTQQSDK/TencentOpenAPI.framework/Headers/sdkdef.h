@@ -333,8 +333,7 @@ typedef enum
 /** 发表一条说说到QQ空间(<b>需要申请权限</b>) */
 FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_ADD_TOPIC;
 
-/** 发表一篇日志到QQ空间(<b>需要申请权限</b>) */
-FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_ADD_ONE_BLOG;
+
 
 /** 创建一个QQ空间相册(<b>需要申请权限</b>) */
 FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_ADD_ALBUM;
@@ -345,8 +344,6 @@ FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_UPLOAD_PIC;
 /** 获取用户QQ空间相册列表(<b>需要申请权限</b>) */
 FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_LIST_ALBUM;
 
-/** 同步分享到QQ空间、腾讯微博 */
-FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_ADD_SHARE;
 
 /** 验证是否认证空间粉丝 */
 FOUNDATION_EXTERN NSString *const kOPEN_PERMISSION_CHECK_PAGE_FANS;
