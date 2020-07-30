@@ -18,6 +18,5 @@ Pod::Spec.new do |s|
   s.source_files   = "ios/RCTQQSDK/*.{h,m}"
   # If you have use qqsdk in your project, choose the newest one and set this path to the container dir
   s.vendored_frameworks = 'ios/RCTQQSDK/TencentOpenAPI.framework'
-  s.resource  = 'ios/RCTQQSDK/TencentOpenApi_IOS_Bundle.bundle' 
   s.dependency 'React'
 end

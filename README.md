@@ -183,8 +183,8 @@ public class MainApplication extends Application implements ReactApplication {
 |-------------|----------------------------------------------------------------------|
 |      404    |                        QQ client not found                           |
 |      405    |                        Android Activity not found                    |
-|      500    |             QQ share (QQZone, QQ, Favorite) error         |
-|      503    |             QQ share (QQZone, QQ, Favorite) cancelled     |
+|      500    |             QQ share (QQSDKPackage,QQZone QQ Favorite) error         |
+|      503    |             QQ share (QQSDKPackage,QQZone QQ Favorite) cancelled     |
 |      600    |                        QQ ssoLogin error                             |
 |      603    |                        ssoLogin cancelled                            |
 
@@ -208,7 +208,7 @@ QQ.isQQClientInstalled()
 ```js
 import * as QQ from 'react-native-qqsdk';
 QQ.ssoLogin()
-  .then((result)=>{console.log('result is', result)})
+  .then((result)=>{'result is', result})
   .catch((error)=>{console.log('error is', error)});
 
 ```
@@ -216,7 +216,7 @@ QQ.ssoLogin()
 ```js
 import * as QQ from 'react-native-qqsdk';
 QQ.logout()
-  .then((result)=>{console.log('result is', result)})
+  .then((result)=>{'result is', result})
   .catch((error)=>{console.log('error is', error)});
 
 ```
@@ -266,7 +266,7 @@ http.get(url)
 
 
 ## About SDK 
-This plugin use 3.2.1 version sdk for Android,3.2.3 version sdk for iOS. You can download lastest version sdk [here](http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD)                        
+This plugin use 3.2.0 version sdk for Android,3.2.1 version sdk for iOS. You can download lastest version sdk [here](http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD)                        
 
 ## Contributing
 Feel free to contribute

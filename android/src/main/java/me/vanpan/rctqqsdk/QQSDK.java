@@ -12,7 +12,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
-import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -28,14 +27,12 @@ import com.tencent.connect.common.Constants;
 import com.tencent.connect.share.QQShare;
 import com.tencent.connect.share.QzonePublish;
 import com.tencent.connect.share.QzoneShare;
-import com.tencent.open.GameAppOperation;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -126,7 +123,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void checkClientInstalled(Promise promise) {
         Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -141,7 +138,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void logout(Promise promise) {
         Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -152,7 +149,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void ssoLogin(final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -166,11 +163,11 @@ public class QQSDK extends ReactContextBaseJavaModule {
         };
         UiThreadUtil.runOnUiThread(runnable);
     }
-
+    
     @ReactMethod
     public void shareText(String text,int shareScene, final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -181,17 +178,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 promise.reject("500","Android 不支持分享文字到 QQ");
                 break;
             case ShareScene.Favorite:
-                params.putInt(GameAppOperation.QQFAV_DATALINE_REQTYPE, GameAppOperation.QQFAV_DATALINE_TYPE_TEXT);
-                params.putString(GameAppOperation.QQFAV_DATALINE_TITLE, appName);
-                params.putString(GameAppOperation.QQFAV_DATALINE_DESCRIPTION, text);
-                params.putString(GameAppOperation.QQFAV_DATALINE_APPNAME, appName);
-                Runnable favoritesRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        mTencent.addToQQFavorites(currentActivity, params, addToQQFavoritesListener);
-                    }
-                };
-                UiThreadUtil.runOnUiThread(favoritesRunnable);
+                promise.reject("500","Android 不支持收藏文字到 QQ");
                 break;
             case ShareScene.QQZone:
                 params.putInt(QzoneShare.SHARE_TO_QZONE_KEY_TYPE, QzonePublish.PUBLISH_TO_QZONE_TYPE_PUBLISHMOOD);
@@ -216,7 +203,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     public void shareImage(String image,String title, String description,int shareScene, final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
         Log.d("图片地址",image);
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -239,21 +226,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 UiThreadUtil.runOnUiThread(qqRunnable);
                 break;
             case ShareScene.Favorite:
-                ArrayList<String> imageUrls = new ArrayList<String>();
-                imageUrls.add(image);
-                params.putInt(GameAppOperation.QQFAV_DATALINE_REQTYPE, GameAppOperation.QQFAV_DATALINE_TYPE_IMAGE_TEXT);
-                params.putString(GameAppOperation.QQFAV_DATALINE_TITLE, title);
-                params.putString(GameAppOperation.QQFAV_DATALINE_DESCRIPTION, description);
-                params.putString(GameAppOperation.QQFAV_DATALINE_IMAGEURL,image);
-                params.putString(GameAppOperation.QQFAV_DATALINE_APPNAME, appName);
-                params.putStringArrayList(GameAppOperation.QQFAV_DATALINE_FILEDATA,imageUrls);
-                Runnable favoritesRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        mTencent.addToQQFavorites(currentActivity, params, addToQQFavoritesListener);
-                    }
-                };
-                UiThreadUtil.runOnUiThread(favoritesRunnable);
+                promise.reject("500","Android 不支持收藏图片到 QQ");
                 break;
             case ShareScene.QQZone:
                 params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_IMAGE);
@@ -279,7 +252,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void shareNews(String url,String image,String title, String description,int shareScene, final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -307,19 +280,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 break;
             case ShareScene.Favorite:
                 image = processImage(image);
-                params.putInt(GameAppOperation.QQFAV_DATALINE_REQTYPE, GameAppOperation.QQFAV_DATALINE_TYPE_DEFAULT);
-                params.putString(GameAppOperation.QQFAV_DATALINE_TITLE, title);
-                params.putString(GameAppOperation.QQFAV_DATALINE_DESCRIPTION,description);
-                params.putString(GameAppOperation.QQFAV_DATALINE_IMAGEURL,image);
-                params.putString(GameAppOperation.QQFAV_DATALINE_URL,url);
-                params.putString(GameAppOperation.QQFAV_DATALINE_APPNAME, appName);
-                Runnable favoritesRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        mTencent.addToQQFavorites(currentActivity, params, addToQQFavoritesListener);
-                    }
-                };
-                UiThreadUtil.runOnUiThread(favoritesRunnable);
+                promise.reject("500","Android 不支持收藏新闻到 QQ");
                 break;
             case ShareScene.QQZone:
                 image = processImage(image);
@@ -349,7 +310,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void shareAudio(String url,String flashUrl,String image,String title, String description,int shareScene, final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -377,21 +338,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 UiThreadUtil.runOnUiThread(qqRunnable);
                 break;
             case ShareScene.Favorite:
-                image = processImage(image);
-                params.putInt(GameAppOperation.QQFAV_DATALINE_REQTYPE, GameAppOperation.QQFAV_DATALINE_TYPE_DEFAULT);
-                params.putString(GameAppOperation.QQFAV_DATALINE_TITLE, title);
-                params.putString(GameAppOperation.QQFAV_DATALINE_DESCRIPTION,description);
-                params.putString(GameAppOperation.QQFAV_DATALINE_IMAGEURL,image);
-                params.putString(GameAppOperation.QQFAV_DATALINE_URL,url);
-                params.putString(GameAppOperation.QQFAV_DATALINE_APPNAME, appName);
-                params.putString(GameAppOperation.QQFAV_DATALINE_AUDIOURL,flashUrl);
-                Runnable favoritesRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        mTencent.addToQQFavorites(currentActivity, params, addToQQFavoritesListener);
-                    }
-                };
-                UiThreadUtil.runOnUiThread(favoritesRunnable);
+                promise.reject("500","Android 不支持收藏音频到 QQ");
                 break;
             case ShareScene.QQZone:
                 image = processImage(image);
@@ -420,7 +367,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
     @ReactMethod
     public void shareVideo(String url,String flashUrl,String image,String title, String description,int shareScene, final Promise promise) {
         final Activity currentActivity = getCurrentActivity();
-        if (null == currentActivity) {
+        if (null == mTencent || null == currentActivity) {
             promise.reject("405",ACTIVITY_DOES_NOT_EXIST);
             return;
         }
@@ -504,10 +451,11 @@ public class QQSDK extends ReactContextBaseJavaModule {
      */
     private String processImage(String image) {
         if (TextUtils.isEmpty(image)) {
-            return "";
+            return null;
         }
+
         if(URLUtil.isHttpUrl(image) || URLUtil.isHttpsUrl(image)) {
-            return saveBytesToFile(getBytesFromURL(image), getExtension(image));
+            return saveBitmapToFile(getBitmapFromURL(image));
         } else if (isBase64(image)) {
             return saveBitmapToFile(decodeBase64ToBitmap(image));
         } else if (URLUtil.isFileUrl(image) || image.startsWith("/") ){
@@ -569,49 +517,11 @@ public class QQSDK extends ReactContextBaseJavaModule {
     }
 
     /**
-     * 根据图片的URL转化成 byte[]
-     * @param src
-     * @return
-     */
-    private static byte[] getBytesFromURL(String src) {
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            byte[] b = getBytes(input);
-            return b;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * 获取链接指向文件后缀
-     *
-     * @param src
-     * @return
-     */
-    public static String getExtension(String src) {
-        String extension = null;
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            String contentType = connection.getContentType();
-            extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return extension;
-    }
-
-    /**
      * 将Base64解码成Bitmap
      * @param Base64String
      * @return
      */
+
     private Bitmap decodeBase64ToBitmap(String Base64String) {
         byte[] decode = Base64.decode(Base64String,Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(decode, 0, decode.length);
@@ -657,47 +567,10 @@ public class QQSDK extends ReactContextBaseJavaModule {
     }
 
     /**
-     * 将 byte[] 保存成文件
-     * @param bytes 图片内容
-     * @return
-     */
-    private String saveBytesToFile(byte[] bytes) {
-        return saveBytesToFile(bytes, "jpg");
-    }
-
-    /**
-     * 将 byte[] 保存成文件
-     * @param bytes 图片内容
-     * @param ext 扩展名
-     * @return
-     */
-    private String saveBytesToFile(byte[] bytes, String ext) {
-        File pictureFile = getOutputMediaFile(ext);
-        if (pictureFile == null) {
-            return null;
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            fos.write(bytes);
-            fos.close();
-        } catch (FileNotFoundException e) {
-            Log.d(TAG, "File not found: " + e.getMessage());
-        } catch (IOException e) {
-            Log.d(TAG, "Error accessing file: " + e.getMessage());
-        }
-        return pictureFile.getAbsolutePath();
-    }
-
-    /**
      * 生成文件用来存储图片
      * @return
      */
     private File getOutputMediaFile(){
-        return getOutputMediaFile("jpg");
-    }
-
-    private File getOutputMediaFile(String ext){
-        ext = ext != null ? ext : "jpg";
         File mediaStorageDir = getCurrentActivity().getExternalCacheDir();
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
@@ -706,7 +579,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
         }
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
         File mediaFile;
-        String mImageName="RN_"+ timeStamp +"." + ext;
+        String mImageName="RN_"+ timeStamp +".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         Log.d("path is",mediaFile.getPath());
         return mediaFile;
@@ -718,7 +591,7 @@ public class QQSDK extends ReactContextBaseJavaModule {
      *
      * @param jsonObject
      */
-    public static boolean initOpenidAndToken(JSONObject jsonObject) {
+    public static void initOpenidAndToken(JSONObject jsonObject) {
         try {
             String token = jsonObject.getString(Constants.PARAM_ACCESS_TOKEN);
             String expires = jsonObject.getString(Constants.PARAM_EXPIRES_IN);
@@ -727,11 +600,9 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 && !TextUtils.isEmpty(openId)) {
                 mTencent.setAccessToken(token, expires);
                 mTencent.setOpenId(openId);
-                return true;
             }
         } catch (Exception e) {
         }
-        return false;
     }
 
     /**
@@ -745,19 +616,17 @@ public class QQSDK extends ReactContextBaseJavaModule {
                 return;
             }
             JSONObject jsonResponse = (JSONObject) response;
-            if (jsonResponse.length() == 0) {
+            if (null != jsonResponse && jsonResponse.length() == 0) {
                 mPromise.reject("600",QQ_RESPONSE_ERROR);
                 return;
             }
-            if (initOpenidAndToken(jsonResponse)) {
-                WritableMap map = Arguments.createMap();
-                map.putString("userid", mTencent.getOpenId());
-                map.putString("access_token", mTencent.getAccessToken());
-                map.putDouble("expires_time", mTencent.getExpiresIn());
-                mPromise.resolve(map);
-            } else {
-                mPromise.reject("600",QQ_RESPONSE_ERROR);
-            }
+            initOpenidAndToken(jsonResponse);
+            WritableMap map = Arguments.createMap();
+            map.putString("userid", mTencent.getOpenId());
+            map.putString("access_token", mTencent.getAccessToken());
+            map.putDouble("expires_time", mTencent.getExpiresIn());
+            mPromise.resolve(map);
+
         }
 
         @Override
@@ -831,16 +700,4 @@ public class QQSDK extends ReactContextBaseJavaModule {
             mPromise.reject("500",e.errorMessage);
         }
     };
-
-    private static byte[] getBytes(InputStream inputStream) throws Exception {
-        byte[] b = new byte[1024];
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        int len = -1;
-        while ((len = inputStream.read(b)) != -1) {
-            byteArrayOutputStream.write(b, 0, len);
-        }
-        byteArrayOutputStream.close();
-        inputStream.close();
-        return byteArrayOutputStream.toByteArray();
-    }
 }

@@ -445,22 +445,35 @@ RCT_EXPORT_METHOD(shareVideo:(NSString *)previewUrl
 - (void)handleOpenURLNotification:(NSNotification *)notification {
     NSURL *url = [NSURL URLWithString:[notification userInfo][@"url"]];
     NSString *schemaPrefix = [@"tencent" stringByAppendingString:appId];
-    if ([url isKindOfClass:[NSURL class]] && [[url absoluteString] hasPrefix:[schemaPrefix stringByAppendingString:@"://response_from_qq"]]) {
-        [QQApiInterface handleOpenURL:url delegate:self];
+    NSUserActivity *userActivity = [notification userInfo][@"userActivity"];
+    
+    if (userActivity && [userActivity isKindOfClass:[NSUserActivity class]]) {
+        [QQApiInterface handleOpenUniversallink:url delegate:self];
+        if ([TencentOAuth CanHandleUniversalLink:url]) {
+            [TencentOAuth HandleUniversalLink:url];
+        }
     } else {
-        [TencentOAuth HandleOpenURL:url];
+        if ([[url absoluteString] hasPrefix:[schemaPrefix stringByAppendingString:@"://response_from_qq"]]) {
+            [QQApiInterface handleOpenURL:url delegate:self];
+        }
+       
+        if ([TencentOAuth CanHandleOpenURL:url]) {
+            [TencentOAuth HandleOpenURL:url];
+        }
     }
 }
 - (void)initTencentOAuth {
     NSArray *urlTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
     for (id type in urlTypes) {
         NSArray *urlSchemes = [type objectForKey:@"CFBundleURLSchemes"];
+        
         for (id scheme in urlSchemes) {
             if ([scheme isKindOfClass:[NSString class]]) {
                 NSString *value = (NSString *)scheme;
                 if ([value hasPrefix:@"tencent"] && (nil == tencentOAuth)) {
                     appId = [value substringFromIndex:7];
-                    tencentOAuth = [[TencentOAuth alloc] initWithAppId:appId andDelegate:self];
+         
+                    tencentOAuth = [[TencentOAuth alloc] initWithAppId:appId enableUniveralLink:NO universalLink:nil delegate:self];
                     break;
                 }
             }

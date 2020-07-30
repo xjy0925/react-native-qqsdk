@@ -6,31 +6,19 @@ def computeVersionName() {
     def json = slurper.parse(file('../../../package.json'), "utf-8")
     return json.version
 }
-def computeQQAppId() {
-    // dynamically retrieve qq app id from package.json
-    def slurper = new JsonSlurper()
-    def json = slurper.parse(file('../../../package.json'), "utf-8")
-    return json.qq_app_id
-}
 apply plugin: 'com.android.library'
 
-def DEFAULT_COMPILE_SDK_VERSION   = 28
-def DEFAULT_BUILD_TOOLS_VERSION   = "28.0.3"
-def DEFAULT_TARGET_SDK_VERSION    = 28
-def DEFAULT_MIN_SDK_VERSION       = 16
-
 android {
-    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION
-    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : DEFAULT_BUILD_TOOLS_VERSION
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
-        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : DEFAULT_MIN_SDK_VERSION
-        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : DEFAULT_TARGET_SDK_VERSION
-
+        minSdkVersion 21
+        targetSdkVersion 26
         versionCode 1
         versionName computeVersionName()
         manifestPlaceholders = [
-                QQ_APP_ID: computeQQAppId()
+                QQ_APP_ID: "@string/QQAppID" // 请在主项目中声明QQAppID
         ]
     }
     sourceSets.main {
@@ -43,5 +31,5 @@ repositories {
 
 dependencies {
     implementation "com.facebook.react:react-native:+"
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    api fileTree(dir: 'libs', include: ['*.jar'])
 }
